@@ -24,9 +24,11 @@ Visit in your browser:
 👉 http://localhost:5173
 
 ✅ Technologies Used
+```bash
 React
 Vite
 JavaScript
+```
 
 🛠️ Roadmap (What’s Next)
 
@@ -48,5 +50,7 @@ Jackpot system + mini animation
 Multiple win lines
 
 ## 📄 License
+```bash
 This project is **free to use**, **free to modify**, and **free to distribute**.  
 No special license required — it's **completely free and open**.
+```
