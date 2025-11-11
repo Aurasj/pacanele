@@ -1,33 +1,51 @@
 import { useState } from "react";
 import { symbols } from "./symbols";
+import "./index.css"; // stil separat
 
 export default function SlotMachine() {
-  const [slots, setSlots] = useState(["❔", "❔", "❔"]);
+  // 3x3 grilă
+  const [slots, setSlots] = useState([
+    ["❔", "❔", "❔"],
+    ["❔", "❔", "❔"],
+    ["❔", "❔", "❔"],
+  ]);
 
   function roll() {
-    const newSlots = [
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-    ];
+    const newSlots = Array.from({ length: 3 }, () =>
+      Array.from({ length: 3 }, () =>
+        symbols[Math.floor(Math.random() * symbols.length)]
+      )
+    );
     setSlots(newSlots);
   }
 
-  const isWin = slots[0] === slots[1] && slots[1] === slots[2];
+  // câștig = rând complet identic (poți schimba după dorință)
+  const isWin = slots.some(
+    (row) => row[0] === row[1] && row[1] === row[2]
+  );
 
   return (
-    <div style={{ textAlign: "center", marginTop: "40px", fontSize: "50px" }}>
-      <div>{slots[0]} {slots[1]} {slots[2]}</div>
+    <div className="machine-wrapper">
+      <h1 className="title">🎰 Pacanele MEMO 🎰</h1>
 
-      <button 
-        onClick={roll} 
-        style={{ marginTop: "20px", fontSize: "20px", padding: "10px 20px" }}
-      >
-        Spin
+      <div className="slot-container">
+        {slots.map((row, i) => (
+          <div key={i} className="slot-row">
+            {row.map((symbol, j) => (
+              <div key={j} className="slot-cell">
+                {symbol}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <button className="spin-btn" onClick={roll}>
+        SPIN
       </button>
 
-      <h2 style={{ marginTop: "20px" }}>
-        {isWin ? "🔥 AI DAT BARBUT BOSS! 🔥" : "Mai încearca boss 😎"}
+      <h2 className="result">
+        {isWin ? "🔥 AI DAT BARBUT BOSS! 🔥" : "Mai încearcă boss 😎"}
       </h2>
     </div>
   );
