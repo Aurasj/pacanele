@@ -24,9 +24,9 @@ export default function SlotMachine() {
     [2, 1, 0, 1, 2],
   ];
 
-  // ----------------------------------------------
+  // -------------------------------------------------------
   // SPIN
-  // ----------------------------------------------
+  // -------------------------------------------------------
   function spin() {
     if (spinning || coins <= 0) return;
 
@@ -66,16 +66,16 @@ export default function SlotMachine() {
     });
   }
 
-  // ----------------------------------------------
+  // -------------------------------------------------------
   // After reels stop
-  // ----------------------------------------------
+  // -------------------------------------------------------
   useEffect(() => {
     if (!spinning) checkWin();
   }, [spinning]);
 
-  // ----------------------------------------------
+  // -------------------------------------------------------
   // Visible symbols
-  // ----------------------------------------------
+  // -------------------------------------------------------
   function getVisibleSymbols() {
     return stops.map((stopIndex, col) => {
       const strip = reelStrips[col];
@@ -89,9 +89,9 @@ export default function SlotMachine() {
     });
   }
 
-  // ----------------------------------------------
-  // Expanding crowns
-  // ----------------------------------------------
+  // =======================================================
+  // Expanding crowns (returns both updated reels AND columns)
+  // =======================================================
   function applyCrownWilds(visible) {
     let wildCols = [];
 
@@ -103,39 +103,45 @@ export default function SlotMachine() {
       return colSymbols;
     });
 
-    setWildEffect((prev) => ({ ...prev, cols: wildCols }));
-    return updated;
+    // IMPORTANT: return struct, not set state yet
+    return { updated, wildCols };
   }
 
-  // ----------------------------------------------
+  // -------------------------------------------------------
   // Line check
-  // ----------------------------------------------
+  // -------------------------------------------------------
   function getLineMatchCount(lineSymbols) {
-    const firstNonWildIndex = lineSymbols.findIndex((s) => s !== "crown");
+    // ignore $ completely on paylines
+    const filtered = lineSymbols.map((s) => (s === "dollar" ? null : s));
+
+    const firstNonWildIndex = filtered.findIndex(
+      (s) => s && s !== "crown"
+    );
     const target =
-      firstNonWildIndex === -1 ? "crown" : lineSymbols[firstNonWildIndex];
+      firstNonWildIndex === -1 ? "crown" : filtered[firstNonWildIndex];
 
     let count = 0;
-    for (let i = 0; i < lineSymbols.length; i++) {
-      if (lineSymbols[i] === target || lineSymbols[i] === "crown") count++;
+    for (let i = 0; i < filtered.length; i++) {
+      if (filtered[i] === target || filtered[i] === "crown") count++;
       else break;
     }
 
     return count >= 3 ? count : 0;
   }
 
-  // ----------------------------------------------
-  // WIN LOGIC
-  // ----------------------------------------------
+  // =======================================================
+  // WIN LOGIC (FINAL FIXED)
+  // =======================================================
   function checkWin() {
     const visible = getVisibleSymbols();
-    const withWilds = applyCrownWilds(visible);
+    const { updated: withWilds, wildCols } = applyCrownWilds(visible);
 
     let totalWin = 0;
     let maxMatch = 0;
     let linesHit = [];
     let symbolsHit = [];
 
+    // --- PAYLINES ---
     LINES.forEach((line, idx) => {
       const lineSymbols = line.map((row, col) => withWilds[col][row]);
       const count = getLineMatchCount(lineSymbols);
@@ -151,7 +157,39 @@ export default function SlotMachine() {
       }
     });
 
-    setWildEffect((prev) => ({ ...prev, match: maxMatch }));
+    // update wildEffect NOW
+    setWildEffect({ cols: wildCols, match: maxMatch });
+
+    // ==================================================
+    // SCATTER LOGIC (CORRECT - IGNORE COVERED $)
+    // ==================================================
+    let dollarCount = 0;
+    let scatterHits = [];
+
+    visible.forEach((colSymbols, c) => {
+      const isExpanded = wildCols.includes(c) && maxMatch >= 3;
+
+      colSymbols.forEach((sym, r) => {
+        // if wild covers dollar → ignore it
+        if (isExpanded && sym === "dollar") return;
+
+        if (sym === "dollar") {
+          dollarCount++;
+          scatterHits.push({ col: c, row: r });
+        }
+      });
+    });
+
+    if (dollarCount >= 3) {
+      const scatterWin = dollarCount * 10;
+      totalWin += scatterWin;
+
+      scatterHits.forEach((hit) =>
+        symbolsHit.push({ col: hit.col, row: hit.row, isDollar: true })
+      );
+    }
+
+    // apply wins
     setWinningLines(linesHit);
     setWinningSymbols(symbolsHit);
 
@@ -159,9 +197,9 @@ export default function SlotMachine() {
     setLastWin(totalWin);
   }
 
-  // ----------------------------------------------
-  // FIX PULSE BUG — CHECK SYMBOL IN DUPLICATED STRIP
-  // ----------------------------------------------
+  // -------------------------------------------------------
+  // FIX PULSE BUG FOR DUPLICATED STRIP
+  // -------------------------------------------------------
   const isWinningSymbol = (col, globalIndex, stripLen) => {
     return winningSymbols.some((s) => {
       if (s.col !== col) return false;
@@ -175,9 +213,27 @@ export default function SlotMachine() {
     });
   };
 
-  // ----------------------------------------------
+  // -------------------------------------------------------
+  // Expanded crown check (visual only)
+  // -------------------------------------------------------
+  function isExpandedCrown(col, index, stripLen) {
+    if (!wildEffect.cols.includes(col) || wildEffect.match < 3)
+      return false;
+
+    const top = stops[col] % stripLen;
+    const mid = (stops[col] + 1) % stripLen;
+    const bot = (stops[col] + 2) % stripLen;
+
+    return (
+      index % stripLen === top ||
+      index % stripLen === mid ||
+      index % stripLen === bot
+    );
+  }
+
+  // -------------------------------------------------------
   // RENDER
-  // ----------------------------------------------
+  // -------------------------------------------------------
   return (
     <>
       <div className="machine">
@@ -201,32 +257,32 @@ export default function SlotMachine() {
           const len = strip.length;
           const fullStrip = [...strip, ...strip];
 
+          const reelClass =
+            wildEffect.cols.includes(col) && wildEffect.match >= 3
+              ? `reel wild-${wildEffect.match}`
+              : "reel";
+
           return (
-            <div
-              key={col}
-              className={
-                "reel " +
-                (wildEffect.cols.includes(col)
-                  ? wildEffect.match === 3
-                    ? "wild-3"
-                    : wildEffect.match === 4
-                    ? "wild-4"
-                    : "wild-5"
-                  : "")
-              }
-            >
+            <div key={col} className={reelClass}>
               <div
                 className="reel-strip"
                 style={{ transform: `translateY(-${offsets[col]}px)` }}
               >
                 {fullStrip.map((name, index) => {
+                  const forceCrown = isExpandedCrown(col, index, len);
+                  const isDollar = name === "dollar";
+
                   const win =
-                    isWinningSymbol(col, index, len) ? "win-symbol" : "";
+                    !forceCrown && isWinningSymbol(col, index, len)
+                      ? isDollar
+                        ? "win-dollar"
+                        : "win-symbol"
+                      : "";
 
                   return (
                     <Symbol
                       key={index}
-                      src={symbols[name]}
+                      src={forceCrown ? symbols["crown"] : symbols[name]}
                       className={win}
                     />
                   );

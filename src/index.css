@@ -269,3 +269,9 @@ body {
   from { stroke-width: 8; }
   to   { stroke-width: 11; }
 }
+.dollar-pulse {
+  animation: winPulse 0.6s infinite alternate;
+}
+.win-dollar {
+  animation: winPulse 0.6s infinite alternate;
+}
