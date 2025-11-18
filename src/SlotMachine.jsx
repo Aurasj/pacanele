@@ -12,10 +12,9 @@ export default function SlotMachine() {
   const [coins, setCoins] = useState(500);
   const [lastWin, setLastWin] = useState(0);
 
-  // 🔥 aici salvăm: coloanele care au legat + cate simboluri a legat (3/4/5)
   const [wildEffect, setWildEffect] = useState({ cols: [], match: 0 });
   const [winningLines, setWinningLines] = useState([]);
-
+  const [winningSymbols, setWinningSymbols] = useState([]);
 
   const LINES = [
     [1, 1, 1, 1, 1],
@@ -25,15 +24,18 @@ export default function SlotMachine() {
     [2, 1, 0, 1, 2],
   ];
 
+  // ----------------------------------------------
+  // SPIN
+  // ----------------------------------------------
   function spin() {
     if (spinning || coins <= 0) return;
 
     setSpinning(true);
     setLastWin(0);
     setWildEffect({ cols: [], match: 0 });
+    setWinningLines([]);
+    setWinningSymbols([]);
     setCoins((c) => c - 1);
-    setWinningLines([]); // 🔥 sterge liniile când apeși spin
-
 
     reelStrips.forEach((strip, col) => {
       setOffsets((prev) => {
@@ -64,34 +66,50 @@ export default function SlotMachine() {
     });
   }
 
+  // ----------------------------------------------
+  // After reels stop
+  // ----------------------------------------------
   useEffect(() => {
-    if (!spinning) {
-      checkWin();
-    }
+    if (!spinning) checkWin();
   }, [spinning]);
 
+  // ----------------------------------------------
+  // Visible symbols
+  // ----------------------------------------------
   function getVisibleSymbols() {
     return stops.map((stopIndex, col) => {
       const strip = reelStrips[col];
       const len = strip.length;
 
-      const top = stopIndex % len;
-      const mid = (stopIndex + 1) % len;
-      const bot = (stopIndex + 2) % len;
-
-      return [strip[top], strip[mid], strip[bot]];
+      return [
+        strip[stopIndex % len],
+        strip[(stopIndex + 1) % len],
+        strip[(stopIndex + 2) % len],
+      ];
     });
   }
 
+  // ----------------------------------------------
+  // Expanding crowns
+  // ----------------------------------------------
   function applyCrownWilds(visible) {
-    return visible.map((colSymbols, col) => {
+    let wildCols = [];
+
+    const updated = visible.map((colSymbols, col) => {
       if (colSymbols.includes("crown") && col >= 1 && col <= 3) {
+        wildCols.push(col);
         return ["crown", "crown", "crown"];
       }
       return colSymbols;
     });
+
+    setWildEffect((prev) => ({ ...prev, cols: wildCols }));
+    return updated;
   }
 
+  // ----------------------------------------------
+  // Line check
+  // ----------------------------------------------
   function getLineMatchCount(lineSymbols) {
     const firstNonWildIndex = lineSymbols.findIndex((s) => s !== "crown");
     const target =
@@ -99,122 +117,139 @@ export default function SlotMachine() {
 
     let count = 0;
     for (let i = 0; i < lineSymbols.length; i++) {
-      const s = lineSymbols[i];
-      if (s === target || s === "crown") count++;
+      if (lineSymbols[i] === target || lineSymbols[i] === "crown") count++;
       else break;
     }
 
     return count >= 3 ? count : 0;
   }
 
+  // ----------------------------------------------
+  // WIN LOGIC
+  // ----------------------------------------------
   function checkWin() {
-  const visible = getVisibleSymbols();
-  const withWilds = applyCrownWilds(visible);
+    const visible = getVisibleSymbols();
+    const withWilds = applyCrownWilds(visible);
 
-  let totalWin = 0;
-  let winningCols = new Set();
-  let maxMatch = 0;
-  let linesHit = []; // 🔥 aici salvăm liniile câștigătoare
+    let totalWin = 0;
+    let maxMatch = 0;
+    let linesHit = [];
+    let symbolsHit = [];
 
-  LINES.forEach((line, index) => {
-    const lineSymbols = line.map((row, col) => withWilds[col][row]);
-    const count = getLineMatchCount(lineSymbols);
+    LINES.forEach((line, idx) => {
+      const lineSymbols = line.map((row, col) => withWilds[col][row]);
+      const count = getLineMatchCount(lineSymbols);
 
-    if (count) {
-      totalWin += count * 5;
-      maxMatch = Math.max(maxMatch, count);
-      linesHit.push({ lineIndex: index, match: count });
+      if (count > 0) {
+        totalWin += count * 5;
+        maxMatch = Math.max(maxMatch, count);
+        linesHit.push({ lineIndex: idx, match: count });
 
-      for (let i = 0; i < count; i++) {
-        winningCols.add(i);
+        for (let col = 0; col < count; col++) {
+          symbolsHit.push({ col, row: line[col] });
+        }
       }
-    }
-  });
+    });
 
-  const crownWinningCols = Array.from(winningCols).filter((col) =>
-    visible[col].includes("crown")
-  );
+    setWildEffect((prev) => ({ ...prev, match: maxMatch }));
+    setWinningLines(linesHit);
+    setWinningSymbols(symbolsHit);
 
-  setWildEffect({
-    cols: crownWinningCols,
-    match: maxMatch,
-  });
+    if (totalWin > 0) setCoins((c) => c + totalWin);
+    setLastWin(totalWin);
+  }
 
-  setWinningLines(linesHit); // 🔥 salvăm liniile câștigătoare
+  // ----------------------------------------------
+  // FIX PULSE BUG — CHECK SYMBOL IN DUPLICATED STRIP
+  // ----------------------------------------------
+  const isWinningSymbol = (col, globalIndex, stripLen) => {
+    return winningSymbols.some((s) => {
+      if (s.col !== col) return false;
 
-  setLastWin(totalWin);
-  if (totalWin > 0) setCoins((c) => c + totalWin);
-}
+      const winningIndex = (stops[col] + s.row) % stripLen;
 
+      return (
+        globalIndex === winningIndex ||
+        globalIndex === winningIndex + stripLen
+      );
+    });
+  };
 
-
+  // ----------------------------------------------
+  // RENDER
+  // ----------------------------------------------
   return (
-  <>
-    <div className="machine" style={{ position: "relative" }}>
-      
-      {/* 🔥 SVG PESTE simboluri */}
-      <svg className="win-lines">
-        {winningLines.map((obj, i) => {
-          const line = LINES[obj.lineIndex];
+    <>
+      <div className="machine">
+
+        <svg className="win-lines">
+          {winningLines.map((obj, i) => {
+            const line = LINES[obj.lineIndex];
+            return (
+              <polyline
+                key={i}
+                points={line
+                  .map((row, col) => `${col * 166 + 75},${row * 150 + 75}`)
+                  .join(" ")}
+                className="line-anim"
+              />
+            );
+          })}
+        </svg>
+
+        {reelStrips.map((strip, col) => {
+          const len = strip.length;
+          const fullStrip = [...strip, ...strip];
 
           return (
-            <polyline
-              key={i}
-              points={line
-                .map((row, col) => `${col * 166 + 75},${row * 150 + 75}`)
-                .join(" ")}
-              className="line-anim"
-            />
+            <div
+              key={col}
+              className={
+                "reel " +
+                (wildEffect.cols.includes(col)
+                  ? wildEffect.match === 3
+                    ? "wild-3"
+                    : wildEffect.match === 4
+                    ? "wild-4"
+                    : "wild-5"
+                  : "")
+              }
+            >
+              <div
+                className="reel-strip"
+                style={{ transform: `translateY(-${offsets[col]}px)` }}
+              >
+                {fullStrip.map((name, index) => {
+                  const win =
+                    isWinningSymbol(col, index, len) ? "win-symbol" : "";
+
+                  return (
+                    <Symbol
+                      key={index}
+                      src={symbols[name]}
+                      className={win}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
-      </svg>
-
-      {/* 🔥 Simbolurile */}
-      {reelStrips.map((strip, col) => (
-        <div
-          className={
-            "reel " +
-            (wildEffect.cols.includes(col)
-              ? wildEffect.match === 3
-                ? "wild-3"
-                : wildEffect.match === 4
-                ? "wild-4"
-                : "wild-5"
-              : "")
-          }
-          key={col}
-        >
-          <div
-            className="reel-strip"
-            style={{ transform: `translateY(-${offsets[col]}px)` }}
-          >
-            {strip.map((name, i) => (
-              <Symbol key={i} src={symbols[name]} />
-            ))}
-
-            {strip.map((name, i) => (
-              <Symbol key={`dup-${i}`} src={symbols[name]} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* PANEL */}
-    <div className="panel">
-      <div className="coins">COINS: {coins}</div>
-      <div className={`win ${lastWin > 0 ? "win--visible" : ""}`}>
-        WIN: {lastWin}
       </div>
-      <button
-        disabled={spinning || coins <= 0}
-        onClick={spin}
-        className="spin-btn"
-      >
-        {spinning ? "..." : coins <= 0 ? "NO COINS" : "SPIN"}
-      </button>
-    </div>
-  </>
-);
 
+      <div className="panel">
+        <div className="coins">{coins} LEI</div>
+        <div className={`win ${lastWin > 0 ? "win--visible" : ""}`}>
+          WIN: {lastWin}
+        </div>
+        <button
+          disabled={spinning || coins <= 0}
+          onClick={spin}
+          className="spin-btn"
+        >
+          {spinning ? "..." : coins <= 0 ? "NO COINS" : "SPIN"}
+        </button>
+      </div>
+    </>
+  );
 }

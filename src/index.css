@@ -3,16 +3,6 @@
 }
 
 body {
-  background: url("/bg-red.jpg");
-  background-size: cover;
-  background-position: center;
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  color: white;
-}
-
-body {
   margin: 0;
   padding: 0;
   background: url('../public/memo.jpg');
@@ -45,11 +35,18 @@ body {
   justify-content: center;
   gap: 16px;
   padding: 30px;
+  position: relative;
 }
+
 .machine-wrapper {
   position: relative;
   display: inline-block;
 }
+
+/* ------------------------------------------ */
+/*                REELS                       */
+/* ------------------------------------------ */
+
 .reel {
   width: 150px;
   height: 450px; /* 3 simboluri */
@@ -62,10 +59,45 @@ body {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.reel.wild {
-  box-shadow: 0 0 18px #ffd800, 0 0 30px rgba(255, 216, 0, 0.7);
-  transform: scale(1.02);
+/* coloane wild care au legat */
+.reel.wild-3,
+.reel.wild-4,
+.reel.wild-5 {
+  background: radial-gradient(circle at center,
+    rgba(255,200,0,0.5),
+    rgba(255,150,0,0.35),
+    rgba(255,120,0,0.15),
+    transparent 70%
+  );
 }
+
+/* glow intens */
+.reel.wild-3::after,
+.reel.wild-4::after,
+.reel.wild-5::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 18px;
+  box-shadow:
+    0 0 25px #ffdc47,
+    0 0 50px #ff961d,
+    0 0 80px rgba(255,140,0,0.9);
+  animation: intenseGlow 1s infinite alternate;
+  z-index: 10;
+}
+
+@keyframes intenseGlow {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
+/* ------------------------------------------ */
+/*                STRIP                       */
+/* ------------------------------------------ */
 
 .reel-strip {
   position: absolute;
@@ -74,8 +106,7 @@ body {
   width: 150px;
   display: flex;
   flex-direction: column;
-    transition: transform 0.5s cubic-bezier(0.15, 0.8, 0.25, 1);
-
+  transition: transform 0.5s cubic-bezier(0.15, 0.8, 0.25, 1);
 }
 
 .symbol-img {
@@ -85,6 +116,63 @@ body {
   user-select: none;
   pointer-events: none;
 }
+.symbol-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  overflow: visible; /* CRUCIAL - permite flăcările */
+}
+
+
+/* ------------------------------------------ */
+/*            WINNING SYMBOL EFFECTS          */
+/* ------------------------------------------ */
+
+.win-symbol::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+
+  background: url("flame.gif") center/contain no-repeat;
+  mix-blend-mode: screen; /* flacăra devine “luminoasă”, nu opacă */
+  
+  opacity: 0.45;          /* 🔥 mai transparent */
+  filter: blur(3px);       /* 🌫 flacără mai soft, frumoasă */
+  pointer-events: none;
+  z-index: 10;
+
+  animation: flameFlickerSoft 0.18s infinite;
+}
+
+
+@keyframes flameFlickerSoft {
+  0%   { opacity: 0.35; transform: scale(1); }
+  50%  { opacity: 0.55; transform: scale(1.03); }
+  100% { opacity: 0.40; transform: scale(1); }
+}
+
+.win-symbol {
+  position: relative;
+  z-index: 20;  /* simbolul rămâne CLAR */
+}
+
+@keyframes winPulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.12); }
+}
+
+@keyframes flameFlicker {
+  0%   { opacity: 0.7; transform: scale(1); }
+  50%  { opacity: 1;   transform: scale(1.05); }
+  100% { opacity: 0.75; transform: scale(1); }
+}
+
+/* ------------------------------------------ */
+/*               PANEL                        */
+/* ------------------------------------------ */
 
 .panel {
   margin-top: 10px;
@@ -141,19 +229,10 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.reel.wild-3,
-.reel.wild-4,
-.reel.wild-5 {
-  background: linear-gradient(180deg, #ffdf52, #ff9b00);
-}
 
-
-
-@keyframes glow5 {
-  0% { transform: scale(1.05); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1.05); }
-}
+/* ------------------------------------------ */
+/*             WIN LINE SVG                   */
+/* ------------------------------------------ */
 
 .win-lines {
   position: absolute;
@@ -168,17 +247,25 @@ body {
 .line-anim {
   fill: none;
   stroke: #ffe600;
-  stroke-width: 6;
+  stroke-width: 8;
   stroke-linejoin: round;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px #fffa9a) drop-shadow(0 0 12px #ffcc00);
+  filter:
+    drop-shadow(0 0 6px #fffa9a)
+    drop-shadow(0 0 12px #ffcc00)
+    drop-shadow(0 0 18px #ff9900);
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
-  animation: drawLine 0.7s ease forwards;
+  animation:
+    drawLine 0.4s ease forwards,
+    glowLine 1.2s infinite alternate;
 }
 
 @keyframes drawLine {
-  to {
-    stroke-dashoffset: 0;
-  }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes glowLine {
+  from { stroke-width: 8; }
+  to   { stroke-width: 11; }
 }

@@ -1,5 +1,7 @@
-export default function Symbol({ src }) {
+export default function Symbol({ src, className }) {
   return (
-    <img src={src} className="symbol-img" draggable="false" />
+    <div className={`symbol-wrapper ${className || ""}`}>
+      <img src={src} className="symbol-img" draggable="false" />
+    </div>
   );
 }
