@@ -6,14 +6,18 @@ body {
   margin: 0;
   padding: 0;
   background: url('../public/memo.jpg');
-  height: 100%;width: 100%;
+  height: 100%;
+  width: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh; 
+  min-height: 100vh;
 }
 
+/* ============================================================
+    APP CONTAINER / TITLE
+============================================================ */
 .app-container {
   min-height: 100vh;
   display: flex;
@@ -30,6 +34,9 @@ body {
   text-shadow: 0 0 10px #000;
 }
 
+/* ============================================================
+    MACHINE LAYOUT
+============================================================ */
 .machine {
   display: flex;
   justify-content: center;
@@ -43,13 +50,12 @@ body {
   display: inline-block;
 }
 
-/* ------------------------------------------ */
-/*                REELS                       */
-/* ------------------------------------------ */
-
+/* ============================================================
+    REELS
+============================================================ */
 .reel {
   width: 150px;
-  height: 450px; /* 3 simboluri */
+  height: 450px;
   border: 4px solid #ffd800;
   border-radius: 12px;
   background: linear-gradient(#5a2b00, #8c4b00);
@@ -59,7 +65,7 @@ body {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* coloane wild care au legat */
+/* WILD GLOW STATES */
 .reel.wild-3,
 .reel.wild-4,
 .reel.wild-5 {
@@ -71,16 +77,12 @@ body {
   );
 }
 
-/* glow intens */
 .reel.wild-3::after,
 .reel.wild-4::after,
 .reel.wild-5::after {
   content: "";
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
+  inset: -10px;
   border-radius: 18px;
   box-shadow:
     0 0 25px #ffdc47,
@@ -95,10 +97,40 @@ body {
   to   { opacity: 1; }
 }
 
-/* ------------------------------------------ */
-/*                STRIP                       */
-/* ------------------------------------------ */
+/* ============================================================
+    WILD EXPAND CASCADE
+============================================================ */
+.reel.wild-3 .symbol-wrapper,
+.reel.wild-4 .symbol-wrapper,
+.reel.wild-5 .symbol-wrapper {
+  opacity: 0;
+  transform: scale(0.6);
+  animation: crownExpand 1.1s forwards ease-out;
+}
 
+.reel.wild-3 .symbol-wrapper:nth-child(1),
+.reel.wild-4 .symbol-wrapper:nth-child(1),
+.reel.wild-5 .symbol-wrapper:nth-child(1) { animation-delay: 0s; }
+
+.reel.wild-3 .symbol-wrapper:nth-child(2),
+.reel.wild-4 .symbol-wrapper:nth-child(2),
+.reel.wild-5 .symbol-wrapper:nth-child(2) { animation-delay: 0.35s; }
+
+.reel.wild-3 .symbol-wrapper:nth-child(3),
+.reel.wild-4 .symbol-wrapper:nth-child(3),
+.reel.wild-5 .symbol-wrapper:nth-child(3) { animation-delay: 0.7s; }
+
+@keyframes crownExpand {
+  0% { opacity: 0; transform: scale(0.4); filter: drop-shadow(0 0 0 gold); }
+  30% { opacity: 0.6; transform: scale(0.7); filter: drop-shadow(0 0 15px gold); }
+  55% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 45px gold); }
+  75% { transform: scale(0.92); filter: drop-shadow(0 0 25px gold); }
+  100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 15px gold); }
+}
+
+/* ============================================================
+    SYMBOL STRIP + SYMBOLS
+============================================================ */
 .reel-strip {
   position: absolute;
   top: 0;
@@ -109,6 +141,13 @@ body {
   transition: transform 0.5s cubic-bezier(0.15, 0.8, 0.25, 1);
 }
 
+.symbol-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  overflow: visible;
+}
+
 .symbol-img {
   width: 150px;
   height: 150px;
@@ -116,47 +155,34 @@ body {
   user-select: none;
   pointer-events: none;
 }
-.symbol-wrapper {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  overflow: visible; /* CRUCIAL - permite flăcările */
-}
 
-
-/* ------------------------------------------ */
-/*            WINNING SYMBOL EFFECTS          */
-/* ------------------------------------------ */
-
+/* ============================================================
+    WINNING SYMBOL EFFECTS
+============================================================ */
 .win-symbol::before {
   content: "";
   position: absolute;
-  top: -12px;
-  left: -12px;
-  right: -12px;
-  bottom: -12px;
-
+  inset: -12px;
   background: url("flame.gif") center/contain no-repeat;
-  mix-blend-mode: screen; /* flacăra devine “luminoasă”, nu opacă */
-  
-  opacity: 0.45;          /* 🔥 mai transparent */
-  filter: blur(3px);       /* 🌫 flacără mai soft, frumoasă */
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  filter: blur(3px);
   pointer-events: none;
   z-index: 10;
-
   animation: flameFlickerSoft 0.18s infinite;
 }
 
-
 @keyframes flameFlickerSoft {
-  0%   { opacity: 0.35; transform: scale(1); }
-  50%  { opacity: 0.55; transform: scale(1.03); }
+  0% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.03); }
   100% { opacity: 0.40; transform: scale(1); }
 }
 
-.win-symbol {
-  position: relative;
-  z-index: 20;  /* simbolul rămâne CLAR */
+.win-symbol { position: relative; z-index: 20; }
+
+.win-dollar,
+.dollar-pulse {
+  animation: winPulse 0.6s infinite alternate;
 }
 
 @keyframes winPulse {
@@ -164,27 +190,19 @@ body {
   to   { transform: scale(1.12); }
 }
 
-@keyframes flameFlicker {
-  0%   { opacity: 0.7; transform: scale(1); }
-  50%  { opacity: 1;   transform: scale(1.05); }
-  100% { opacity: 0.75; transform: scale(1); }
-}
-
-/* ------------------------------------------ */
-/*               PANEL                        */
-/* ------------------------------------------ */
-
+/* ============================================================
+    PANEL
+============================================================ */
 .panel {
   margin-top: 10px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   padding: 16px 32px;
   width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline: auto;
   border-radius: 16px;
   border: 2px solid #888;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 12px rgba(0,0,0,0.8);
 }
 
 .coins {
@@ -222,7 +240,7 @@ body {
 
 .spin-btn:hover:not(:disabled) {
   transform: scale(1.08);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 12px rgba(0,0,0,0.7);
 }
 
 .spin-btn:disabled {
@@ -230,10 +248,30 @@ body {
   cursor: not-allowed;
 }
 
-/* ------------------------------------------ */
-/*             WIN LINE SVG                   */
-/* ------------------------------------------ */
+/* ============================================================
+    TEST BIGWIN BUTTON
+============================================================ */
+.test-bigwin-btn {
+  font-size: 20px;
+  padding: 6px 18px;
+  margin-bottom: 10px;
+  background: #0099ff;
+  border: 3px solid #00e5ff;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
+.test-bigwin-btn:hover {
+  transform: scale(1.1);
+  background: #00b7ff;
+  box-shadow: 0 0 10px #00eaff;
+}
+
+/* ============================================================
+    WIN LINES SVG
+============================================================ */
 .win-lines {
   position: absolute;
   top: 0;
@@ -269,9 +307,129 @@ body {
   from { stroke-width: 8; }
   to   { stroke-width: 11; }
 }
-.dollar-pulse {
-  animation: winPulse 0.6s infinite alternate;
+
+/* ============================================================
+    BIG WIN UNIVERSE OVERLAY
+============================================================ */
+.bigwin-universe {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2000000;
+  overflow: hidden;
 }
-.win-dollar {
-  animation: winPulse 0.6s infinite alternate;
+
+/* FUNDAL COSMIC – mult mai vizibil */
+.cosmic-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+    rgba(120,0,200,0.9),
+    rgba(20,0,60,0.95),
+    black 80%
+  );
+  filter: blur(30px);
+  animation: cosmicPulse 6s ease-in-out infinite alternate;
 }
+
+@keyframes cosmicPulse {
+  from { transform: scale(1); opacity: 0.9; }
+  to   { transform: scale(1.2); opacity: 1; }
+}
+
+/* SUPERNOVA – face boom real acum */
+.supernova {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 550px;
+  height: 550px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle,
+    rgba(255,255,210,1),
+    rgba(255,200,0,0.8),
+    rgba(255,100,0,0.4),
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(35px) brightness(2);
+  animation:
+    supernovaBoom 1.2s ease-out forwards,
+    supernovaGlow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes supernovaBoom {
+  0% {
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0;
+    filter: blur(60px);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    filter: blur(35px);
+  }
+}
+
+@keyframes supernovaGlow {
+  from { filter: blur(35px) brightness(1.5); }
+  to   { filter: blur(55px) brightness(2.2); }
+}
+
+/* TEXT EPIC – mult mai bright */
+.bigwin-text {
+  position: absolute;
+  top: 33%;
+  width: 100%;
+  text-align: center;
+  font-size: 110px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    0 0 30px #fff,
+    0 0 60px #ffcc00,
+    0 0 120px #ff9900;
+  animation: textPop 1s ease-out forwards;
+}
+
+.bigwin-amount {
+  font-size: 80px;
+  color: #ffe600;
+  text-shadow:
+    0 0 25px #fff,
+    0 0 70px #ffdd00;
+}
+
+/* ⭐ NEW STARFIELD – stele mult mai vizibile */
+.stars-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 9999999;
+}
+
+.star {
+  position: absolute;
+  width: 6px;       /* mai mare */
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 12px white; /* glow puternic */
+  opacity: 0.9;
+  top: 110vh; /* pornesc de jos */
+  left: calc(2% + 96% * var(--rand-x));
+  animation: starFly 2s linear infinite;
+  animation-delay: calc(-2s * var(--rand-d));
+}
+
+@keyframes starFly {
+  from {
+    transform: translateY(0) translateX(0) scale(0.7);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-160vh) translateX(40vw) scale(1.4);
+    opacity: 0;
+  }
+}
+

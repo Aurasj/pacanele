@@ -24,9 +24,9 @@ export default function SlotMachine() {
     [2, 1, 0, 1, 2],
   ];
 
-  // -------------------------------------------------------
-  // SPIN
-  // -------------------------------------------------------
+  /* ============================================
+     SPIN
+  ============================================ */
   function spin() {
     if (spinning || coins <= 0) return;
 
@@ -66,16 +66,16 @@ export default function SlotMachine() {
     });
   }
 
-  // -------------------------------------------------------
-  // After reels stop
-  // -------------------------------------------------------
+  /* ============================================
+     EFFECT WHEN REELS STOP
+  ============================================ */
   useEffect(() => {
     if (!spinning) checkWin();
   }, [spinning]);
 
-  // -------------------------------------------------------
-  // Visible symbols
-  // -------------------------------------------------------
+  /* ============================================
+     GET VISIBLE SYMBOLS
+  ============================================ */
   function getVisibleSymbols() {
     return stops.map((stopIndex, col) => {
       const strip = reelStrips[col];
@@ -89,9 +89,9 @@ export default function SlotMachine() {
     });
   }
 
-  // =======================================================
-  // Expanding crowns (returns both updated reels AND columns)
-  // =======================================================
+  /* ============================================
+     EXPANDING WILDS
+  ============================================ */
   function applyCrownWilds(visible) {
     let wildCols = [];
 
@@ -103,20 +103,19 @@ export default function SlotMachine() {
       return colSymbols;
     });
 
-    // IMPORTANT: return struct, not set state yet
     return { updated, wildCols };
   }
 
-  // -------------------------------------------------------
-  // Line check
-  // -------------------------------------------------------
+  /* ============================================
+     LINE MATCH CHECK
+  ============================================ */
   function getLineMatchCount(lineSymbols) {
-    // ignore $ completely on paylines
     const filtered = lineSymbols.map((s) => (s === "dollar" ? null : s));
 
     const firstNonWildIndex = filtered.findIndex(
       (s) => s && s !== "crown"
     );
+
     const target =
       firstNonWildIndex === -1 ? "crown" : filtered[firstNonWildIndex];
 
@@ -129,9 +128,9 @@ export default function SlotMachine() {
     return count >= 3 ? count : 0;
   }
 
-  // =======================================================
-  // WIN LOGIC (FINAL FIXED)
-  // =======================================================
+  /* ============================================
+     CHECK WIN LOGIC
+  ============================================ */
   function checkWin() {
     const visible = getVisibleSymbols();
     const { updated: withWilds, wildCols } = applyCrownWilds(visible);
@@ -141,7 +140,7 @@ export default function SlotMachine() {
     let linesHit = [];
     let symbolsHit = [];
 
-    // --- PAYLINES ---
+    /* ---- PAYLINES ---- */
     LINES.forEach((line, idx) => {
       const lineSymbols = line.map((row, col) => withWilds[col][row]);
       const count = getLineMatchCount(lineSymbols);
@@ -157,12 +156,9 @@ export default function SlotMachine() {
       }
     });
 
-    // update wildEffect NOW
     setWildEffect({ cols: wildCols, match: maxMatch });
 
-    // ==================================================
-    // SCATTER LOGIC (CORRECT - IGNORE COVERED $)
-    // ==================================================
+    /* ---- SCATTER LOGIC ---- */
     let dollarCount = 0;
     let scatterHits = [];
 
@@ -170,7 +166,6 @@ export default function SlotMachine() {
       const isExpanded = wildCols.includes(c) && maxMatch >= 3;
 
       colSymbols.forEach((sym, r) => {
-        // if wild covers dollar → ignore it
         if (isExpanded && sym === "dollar") return;
 
         if (sym === "dollar") {
@@ -189,17 +184,21 @@ export default function SlotMachine() {
       );
     }
 
-    // apply wins
+    /* ---- APPLY WINS ---- */
     setWinningLines(linesHit);
     setWinningSymbols(symbolsHit);
 
     if (totalWin > 0) setCoins((c) => c + totalWin);
     setLastWin(totalWin);
+
+    if (totalWin >= 50) {
+      setTimeout(() => setLastWin(0), 3000);
+    }
   }
 
-  // -------------------------------------------------------
-  // FIX PULSE BUG FOR DUPLICATED STRIP
-  // -------------------------------------------------------
+  /* ============================================
+     WINNING SYMBOL (DUPLICATE STRIP FIX)
+  ============================================ */
   const isWinningSymbol = (col, globalIndex, stripLen) => {
     return winningSymbols.some((s) => {
       if (s.col !== col) return false;
@@ -213,9 +212,9 @@ export default function SlotMachine() {
     });
   };
 
-  // -------------------------------------------------------
-  // Expanded crown check (visual only)
-  // -------------------------------------------------------
+  /* ============================================
+     EXPANDED CROWN (VISUAL)
+  ============================================ */
   function isExpandedCrown(col, index, stripLen) {
     if (!wildEffect.cols.includes(col) || wildEffect.match < 3)
       return false;
@@ -231,13 +230,13 @@ export default function SlotMachine() {
     );
   }
 
-  // -------------------------------------------------------
-  // RENDER
-  // -------------------------------------------------------
+  /* ============================================
+     RENDER
+  ============================================ */
   return (
     <>
+      {/* ================= MACHINE ================= */}
       <div className="machine">
-
         <svg className="win-lines">
           {winningLines.map((obj, i) => {
             const line = LINES[obj.lineIndex];
@@ -293,11 +292,47 @@ export default function SlotMachine() {
         })}
       </div>
 
+      {/* ================= BIG WIN OVERLAY ================= */}
+      {lastWin >= 100 && (
+        <div className="bigwin-universe">
+          <div className="cosmic-bg"></div>
+          <div className="supernova"></div>
+
+          <div className="bigwin-text cosmic-glow">
+            BIG WIN! <br />
+            <span className="bigwin-amount">+{lastWin} LEI</span>
+          </div>
+
+          <div className="stars-field">
+            {Array.from({ length: 120 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="star"
+                style={{
+                  "--rand-x": Math.random(),
+                  "--rand-d": Math.random()
+                }}
+              ></div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ================= PANEL ================= */}
       <div className="panel">
+        <button
+          className="test-bigwin-btn"
+          onClick={() => setLastWin(100)}
+        >
+          TEST BIG WIN
+        </button>
+
         <div className="coins">{coins} LEI</div>
+
         <div className={`win ${lastWin > 0 ? "win--visible" : ""}`}>
           WIN: {lastWin}
         </div>
+
         <button
           disabled={spinning || coins <= 0}
           onClick={spin}
