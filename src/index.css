@@ -12,6 +12,18 @@ body {
   color: white;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  background: url('../public/memo.jpg');
+  height: 100%;width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh; 
+}
+
 .app-container {
   min-height: 100vh;
   display: flex;
