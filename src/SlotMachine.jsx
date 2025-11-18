@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { symbols, reelStrips } from "./symbols";
 import Symbol from "./Symbol";
+import Gamble from "./Gamble";
+import BigWin from "./BigWin";
+import { createPortal } from "react-dom";
+
 
 export default function SlotMachine() {
   const reelsCount = 5;
@@ -15,6 +19,8 @@ export default function SlotMachine() {
   const [wildEffect, setWildEffect] = useState({ cols: [], match: 0 });
   const [winningLines, setWinningLines] = useState([]);
   const [winningSymbols, setWinningSymbols] = useState([]);
+  const [showGamble, setShowGamble] = useState(false);
+  
 
   const LINES = [
     [1, 1, 1, 1, 1],
@@ -31,11 +37,18 @@ export default function SlotMachine() {
     if (spinning || coins <= 0) return;
 
     setSpinning(true);
-    setLastWin(0);
+        // Dacă jucătorul NU a dublat, adunăm câștigul la bani
+      if (lastWin > 0) {
+        setCoins(c => c + lastWin);
+      }
+
+      // Resetăm win-ul pentru noul spin
+      setLastWin(0);
+
     setWildEffect({ cols: [], match: 0 });
     setWinningLines([]);
     setWinningSymbols([]);
-    setCoins((c) => c - 1);
+    setCoins((c) => c - 35);
 
     reelStrips.forEach((strip, col) => {
       setOffsets((prev) => {
@@ -69,9 +82,13 @@ export default function SlotMachine() {
   /* ============================================
      EFFECT WHEN REELS STOP
   ============================================ */
-  useEffect(() => {
-    if (!spinning) checkWin();
-  }, [spinning]);
+  // Rulează checkWin doar după ce TOATE rolele au terminat primul spin
+useEffect(() => {
+  if (!spinning && stops.some(s => s !== 0)) {
+    checkWin();
+  }
+}, [spinning]);
+
 
   /* ============================================
      GET VISIBLE SYMBOLS
@@ -185,15 +202,19 @@ export default function SlotMachine() {
     }
 
     /* ---- APPLY WINS ---- */
-    setWinningLines(linesHit);
-    setWinningSymbols(symbolsHit);
+        setWinningLines(linesHit);
+        setWinningSymbols(symbolsHit);
 
-    if (totalWin > 0) setCoins((c) => c + totalWin);
-    setLastWin(totalWin);
+        setLastWin(totalWin);
+        if (totalWin >= 100) {
+  setTimeout(() => {
+    setLastWin(0);  // 🔥 ascunde BigWin după 3 secunde
+  }, 3000);
+}
 
-    if (totalWin >= 50) {
-      setTimeout(() => setLastWin(0), 3000);
-    }
+
+
+    
   }
 
   /* ============================================
@@ -236,6 +257,7 @@ export default function SlotMachine() {
   return (
     <>
       {/* ================= MACHINE ================= */}
+    <div className="slot-wrapper">
       <div className="machine">
         <svg className="win-lines">
           {winningLines.map((obj, i) => {
@@ -292,55 +314,63 @@ export default function SlotMachine() {
         })}
       </div>
 
-      {/* ================= BIG WIN OVERLAY ================= */}
-      {lastWin >= 100 && (
-        <div className="bigwin-universe">
-          <div className="cosmic-bg"></div>
-          <div className="supernova"></div>
+      {showGamble &&
+  document.body.appendChild(
+    Object.assign(
+      document.createElement("div"),
+      { id: "gamble-root" }
+    )
+  ) && null}
+{showGamble && 
+  createPortal(
+    <Gamble 
+      win={lastWin}
+      onClose={() => setShowGamble(false)}
+      onCollect={(amount) => {
+        setCoins(c => c + amount);
+        setShowGamble(false);
+        setLastWin(0);
+      }}
+    />,
+    document.getElementById("gamble-root")
+  )
+}
 
-          <div className="bigwin-text cosmic-glow">
-            BIG WIN! <br />
-            <span className="bigwin-amount">+{lastWin} LEI</span>
-          </div>
 
-          <div className="stars-field">
-            {Array.from({ length: 120 }).map((_, i) => (
-              <div 
-                key={i} 
-                className="star"
-                style={{
-                  "--rand-x": Math.random(),
-                  "--rand-d": Math.random()
-                }}
-              ></div>
-            ))}
-          </div>
-        </div>
-      )}
+      {lastWin >= 100 && <BigWin amount={lastWin} />}
 
       {/* ================= PANEL ================= */}
-      <div className="panel">
-        <button
-          className="test-bigwin-btn"
-          onClick={() => setLastWin(100)}
-        >
-          TEST BIG WIN
-        </button>
+<div className="panel-container">
 
-        <div className="coins">{coins} LEI</div>
+  <div className="panel-box">
+    <div className="coins-label">BANI</div>
+    <div className="coins-value">{coins} LEI</div>
 
-        <div className={`win ${lastWin > 0 ? "win--visible" : ""}`}>
-          WIN: {lastWin}
-        </div>
+    <div className="win-label">CASTIG</div>
+    <div className="win-value">{lastWin} LEI</div>
+  </div>
 
-        <button
-          disabled={spinning || coins <= 0}
-          onClick={spin}
-          className="spin-btn"
-        >
-          {spinning ? "..." : coins <= 0 ? "NO COINS" : "SPIN"}
-        </button>
-      </div>
+  <div className="panel-buttons">
+    <button
+      disabled={spinning || coins <= 0}
+      onClick={spin}
+      className="spin-big"
+    >
+      Da o mana
+    </button>
+
+    <button
+  className={`gamble-btn ${lastWin > 0 ? "active" : "disabled"}`}
+  disabled={lastWin <= 0}
+  onClick={() => lastWin > 0 && setShowGamble(true)}
+>
+  DUBLEAZA
+</button>
+
+  </div>
+</div>
+</div>
+
     </>
   );
 }

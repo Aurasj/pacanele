@@ -1,0 +1,133 @@
+/* bigwin.css — TOT BIG WIN CSS MUTAT AICI */
+
+/* ============================================================
+    BIG WIN UNIVERSE OVERLAY
+============================================================ */
+.bigwin-universe {
+  position: fixed;
+  inset: 0;
+  z-index: 2000000;
+  overflow: hidden;
+}
+.bigwin-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65); /* 🔥 overlay negru transparent */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1999999; /* puțin sub univers, dar peste tot restul */
+}
+
+.cosmic-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+    rgba(120,0,200,0.9),
+    rgba(20,0,60,0.95),
+    black 80%
+  );
+  filter: blur(30px);
+  animation: cosmicPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes cosmicPulse {
+  from { transform: scale(1); opacity: 0.9; }
+  to   { transform: scale(1.2); opacity: 1; }
+}
+
+.supernova {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 550px;
+  height: 550px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle,
+    rgba(255,255,210,1),
+    rgba(255,200,0,0.8),
+    rgba(255,100,0,0.4),
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(35px) brightness(2);
+  animation:
+    supernovaBoom 1.2s ease-out forwards,
+    supernovaGlow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes supernovaBoom {
+  0% {
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0;
+    filter: blur(60px);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    filter: blur(35px);
+  }
+}
+
+@keyframes supernovaGlow {
+  from { filter: blur(35px) brightness(1.5); }
+  to   { filter: blur(55px) brightness(2.2); }
+}
+
+.bigwin-text {
+  position: absolute;
+  top: 33%;
+  width: 100%;
+  text-align: center;
+  font-size: 110px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    0 0 30px #fff,
+    0 0 60px #ffcc00,
+    0 0 120px #ff9900;
+  animation: textPop 1s ease-out forwards;
+}
+
+.bigwin-amount {
+  font-size: 80px;
+  color: #ffe600;
+  text-shadow:
+    0 0 25px #fff,
+    0 0 70px #ffdd00;
+}
+
+/* STARFIELD */
+.stars-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 9999999;
+}
+
+.star {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 12px white;
+  opacity: 0.9;
+  top: 110vh;
+  left: calc(2% + 96% * var(--rand-x));
+  animation: starFly 2s linear infinite;
+  animation-delay: calc(-2s * var(--rand-d));
+}
+
+@keyframes starFly {
+  from {
+    transform: translateY(0) translateX(0) scale(0.7);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-160vh) translateX(40vw) scale(1.4);
+    opacity: 0;
+  }
+}
