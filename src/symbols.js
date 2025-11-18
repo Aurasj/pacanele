@@ -10,9 +10,19 @@ export const symbols = {
 };
 
 export const reelStrips = [
-  ["seven", "plum", "lemon", "plum", "watermelon", "grapes", "orange", "crown"],
+  
+  ["seven", "plum", "lemon", "plum", "watermelon", "grapes", "orange", "dollar"],
+
+  
   ["crown", "lemon", "seven", "watermelon", "orange", "grapes", "dollar", "plum"],
+
+ 
   ["orange", "crown", "lemon", "grapes", "watermelon", "seven", "plum", "dollar"],
+
+  
   ["grapes", "plum", "seven", "orange", "lemon", "crown", "watermelon", "dollar"],
-  ["dollar", "seven", "watermelon", "crown", "grapes", "orange", "lemon", "plum"]
+
+  
+  ["dollar", "seven", "watermelon", "grapes", "orange", "lemon", "plum", "dollar"]
 ];
+

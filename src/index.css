@@ -34,7 +34,10 @@ body {
   gap: 16px;
   padding: 30px;
 }
-
+.machine-wrapper {
+  position: relative;
+  display: inline-block;
+}
 .reel {
   width: 150px;
   height: 450px; /* 3 simboluri */
@@ -59,6 +62,8 @@ body {
   width: 150px;
   display: flex;
   flex-direction: column;
+    transition: transform 0.5s cubic-bezier(0.15, 0.8, 0.25, 1);
+
 }
 
 .symbol-img {
@@ -123,4 +128,45 @@ body {
 .spin-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.reel.wild-3,
+.reel.wild-4,
+.reel.wild-5 {
+  background: linear-gradient(180deg, #ffdf52, #ff9b00);
+}
+
+
+
+@keyframes glow5 {
+  0% { transform: scale(1.05); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1.05); }
+}
+
+.win-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(5 * 166px);
+  height: 450px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.line-anim {
+  fill: none;
+  stroke: #ffe600;
+  stroke-width: 6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px #fffa9a) drop-shadow(0 0 12px #ffcc00);
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 0.7s ease forwards;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
