@@ -1,12 +1,12 @@
 export const symbols = {
-  plum: "/symbols/plum.png",
-  orange: "/symbols/orange.png",
-  lemon: "/symbols/lemon.png",
-  watermelon: "/symbols/watermelon.png",
-  crown: "/symbols/crown.png",
-  dollar: "/symbols/dollar.png",
-  grapes: "/symbols/strugure.png",
-  seven: "/symbols/7.png"
+  plum: "./symbols/plum.png",
+  orange: "./symbols/orange.png",
+  lemon: "./symbols/lemon.png",
+  watermelon: "./symbols/watermelon.png",
+  crown: "./symbols/crown.png",
+  dollar: "./symbols/dollar.png",
+  grapes: "./symbols/strugure.png",
+  seven: "./symbols/7.png"
 };
 
 export const reelStrips = [

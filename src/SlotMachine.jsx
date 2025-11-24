@@ -4,6 +4,8 @@ import Symbol from "./Symbol";
 import Gamble from "./Gamble";
 import BigWin from "./BigWin";
 import { createPortal } from "react-dom";
+import soundManager from "./sound_manager";
+
 
 
 export default function SlotMachine() {
@@ -13,7 +15,7 @@ export default function SlotMachine() {
   const [offsets, setOffsets] = useState(Array(reelsCount).fill(0));
   const [stops, setStops] = useState(Array(reelsCount).fill(0));
   const [spinning, setSpinning] = useState(false);
-  const [coins, setCoins] = useState(500);
+  const [coins, setCoins] = useState(690);
   const [lastWin, setLastWin] = useState(0);
 
   const [wildEffect, setWildEffect] = useState({ cols: [], match: 0 });
@@ -35,20 +37,19 @@ export default function SlotMachine() {
   ============================================ */
   function spin() {
     if (spinning || coins <= 0) return;
+     soundManager.play("spin");
 
     setSpinning(true);
-        // Dacă jucătorul NU a dublat, adunăm câștigul la bani
       if (lastWin > 0) {
         setCoins(c => c + lastWin);
       }
 
-      // Resetăm win-ul pentru noul spin
       setLastWin(0);
 
     setWildEffect({ cols: [], match: 0 });
     setWinningLines([]);
     setWinningSymbols([]);
-    setCoins((c) => c - 35);
+    setCoins((c) => c -20);
 
     reelStrips.forEach((strip, col) => {
       setOffsets((prev) => {
@@ -75,6 +76,7 @@ export default function SlotMachine() {
         if (col === reelsCount - 1) {
           setTimeout(() => setSpinning(false), 500);
         }
+        soundManager.play("stop");
       }, 600 + col * 250);
     });
   }
@@ -82,7 +84,6 @@ export default function SlotMachine() {
   /* ============================================
      EFFECT WHEN REELS STOP
   ============================================ */
-  // Rulează checkWin doar după ce TOATE rolele au terminat primul spin
 useEffect(() => {
   if (!spinning && stops.some(s => s !== 0)) {
     checkWin();
@@ -163,6 +164,7 @@ useEffect(() => {
       const count = getLineMatchCount(lineSymbols);
 
       if (count > 0) {
+        soundManager.play("win");
         totalWin += count * 5;
         maxMatch = Math.max(maxMatch, count);
         linesHit.push({ lineIndex: idx, match: count });
@@ -193,6 +195,8 @@ useEffect(() => {
     });
 
     if (dollarCount >= 3) {
+      soundManager.play("scatter");
+
       const scatterWin = dollarCount * 10;
       totalWin += scatterWin;
 
@@ -207,10 +211,15 @@ useEffect(() => {
 
         setLastWin(totalWin);
         if (totalWin >= 100) {
+  soundManager.play("bigwin");
+
+  setCoins(c => c + totalWin);
+
   setTimeout(() => {
-    setLastWin(0);  // 🔥 ascunde BigWin după 3 secunde
+    setLastWin(0);
   }, 3000);
 }
+
 
 
 
@@ -362,7 +371,13 @@ useEffect(() => {
     <button
   className={`gamble-btn ${lastWin > 0 ? "active" : "disabled"}`}
   disabled={lastWin <= 0}
-  onClick={() => lastWin > 0 && setShowGamble(true)}
+  onClick={() => {
+  if (lastWin > 0) {
+    setShowGamble(true);
+    soundManager.play("gamble");
+  }
+}}
+
 >
   DUBLEAZA
 </button>

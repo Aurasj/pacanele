@@ -6,7 +6,7 @@ export default function Gamble({ win, onClose, onCollect }) {
   const [revealed, setRevealed] = useState(null);
   const [result, setResult] = useState(null);
 
-  // 🔥 Istoric persistent (doar refresh îl șterge)
+  // Istoric persistent (refresh = stergere)
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem("gambleHistory");
     return saved ? JSON.parse(saved) : [];
@@ -22,7 +22,7 @@ export default function Gamble({ win, onClose, onCollect }) {
     setResult(isWin);
     const newAmount = isWin ? current * 2 : 0;
 
-    // 🔥 salvăm cartea în istoric și în localStorage
+    //salvam cartea în istoric si în localStorage
     setHistory(prev => {
       let updated = [...prev, real];
       if (updated.length > 5) updated = updated.slice(updated.length - 5);
@@ -50,11 +50,11 @@ export default function Gamble({ win, onClose, onCollect }) {
 
         <div className="gamble-win">{current} LEI</div>
 
-        {/* CARTEA PRINCIPALĂ */}
+        {/* CARTEA PRINCIPALA */}
         <div className="gamble-card">
           {!revealed && <div className="card-back"></div>}
-          {revealed === "red" && <img src="/cards/red.png" className="card-img" />}
-          {revealed === "black" && <img src="/cards/black.png" className="card-img" />}
+          {revealed === "red" && <img src="./cards/red.png" className="card-img" />}
+          {revealed === "black" && <img src="./cards/black.png" className="card-img" />}
         </div>
 
         {/* Botone culoare */}
@@ -82,10 +82,10 @@ export default function Gamble({ win, onClose, onCollect }) {
           </div>
         )}
 
-        {/* 🔥 ISTORIC — ultimele 5 cărți */}
+        {/* ISTORIC — ultimele 5 carti */}
         <div className="card-history">
           {history.map((h, i) => (
-            <img key={i} src={`/cards/${h}.png`} className="history-card" />
+            <img key={i} src={`./cards/${h}.png`} className="history-card" />
           ))}
         </div>
 

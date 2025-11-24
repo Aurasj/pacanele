@@ -15,19 +15,73 @@ body {
   min-height: 100vh;
 }
 
+/* ========================================================= */
+/* DEMO PANEL OVERLAY */
+/* ========================================================= */
+.demo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+}
+
+.demo-box {
+  background: #222;
+  border: 3px solid #ffd800;
+  padding: 30px 35px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 420px;
+  color: white;
+  box-shadow: 0 0 25px #000;
+}
+
+.demo-title {
+  font-size: 32px;
+  color: #ffd800;
+  margin-bottom: 18px;
+  text-shadow: 0 0 10px black;
+}
+
+.demo-text {
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.demo-btn {
+  padding: 12px 30px;
+  font-size: 20px;
+  font-weight: bold;
+  background: #ff0000;
+  border: 3px solid #ffd800;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.demo-btn:hover {
+  transform: scale(1.08);
+  background: #cc0000;
+}
+
 /* ============================================================
     APP CONTAINER / TITLE
 ============================================================ */
 .app-container {
-  width: 100vw;           /* tot ecranul orizontal */
-  height: 100vh;          /* tot ecranul vertical */
-  overflow-y: auto;   /* 🔥 permite scroll vertical */
-  overflow-x: hidden;     /* 🔥 elimină scroll complet */
-  position: relative;     /* important pt butoanele din dreapta */
+  width: 100vw;         
+  height: 100vh;         
+  overflow-y: auto;  
+  overflow-x: hidden;     
+  position: relative;    
   display: flex;
-  flex-direction: column; /* ca titlul să fie sus, apoi slotul */
-  align-items: center;    /* centrat pe orizontală */
-  justify-content: flex-start; /* începe de sus, nu pe mijloc */
+  flex-direction: column; 
+  align-items: center;    
+  justify-content: flex-start; 
   padding-top: 10px;
 }
 .slot-wrapper {

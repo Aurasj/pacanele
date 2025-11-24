@@ -1,5 +1,3 @@
-/* bigwin.css — TOT BIG WIN CSS MUTAT AICI */
-
 /* ============================================================
     BIG WIN UNIVERSE OVERLAY
 ============================================================ */
@@ -14,11 +12,11 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.65); /* 🔥 overlay negru transparent */
+  background: rgba(0, 0, 0, 0.65); 
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1999999; /* puțin sub univers, dar peste tot restul */
+  z-index: 1999999;
 }
 
 .cosmic-bg {
