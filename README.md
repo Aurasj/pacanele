@@ -33,21 +33,21 @@ JavaScript
 🛠️ Roadmap (What’s Next)
 
 🔥 LEVEL 2 — Improved Visuals
-Better styling (casino theme)
-Custom symbols (emoji or images)
-Basic spin animations
+Better styling (casino theme)  (DONE🟢)
+Custom symbols (emoji or images)  (DONE🟢)
+Basic spin animations  (DONE🟢)
 Start menu / intro screen
 
 💰 LEVEL 3 — Game Mechanics
-Credit / balance system
+Credit / balance system  (DONE🟢)
 Win payouts based on symbol combinations
 Multiple bet options (bet 1, bet 5, bet 10)
-Sound effects for win/lose
+Sound effects for win/lose  (DONE🟢)
 
 🎡 LEVEL 4 — Advanced Features
-Real slot spinning animations with timing delays
-Jackpot system + mini animation
-Multiple win lines
+Real slot spinning animations with timing delays  (DONE🟢)
+Jackpot system + mini animation  (DONE🟢)
+Multiple win lines  (DONE🟢)
 
 ## 📄 License
 ```bash
